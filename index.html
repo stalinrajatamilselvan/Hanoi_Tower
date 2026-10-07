@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title> Hanoi Tower Game</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f2f2f2;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .towers {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            margin-top: 50px;
+            height: 400px;
+        }
+
+        .tower {
+            width: 30%;
+            height: 350px;
+            position: relative;
+            border-bottom: 10px solid #ee5353;
+        }
+
+        /* Vertical rod */
+        .tower::before {
+            content: "";
+            position: absolute;
+            width: 20px;
+            height: 300px;
+            background-color: #df551e;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .tower h2 {
+            position: absolute;
+            bottom: -60px;
+            background-color: #2ecc71;
+            width: 100%;
+        }
+
+        .disk {
+            position: absolute;
+            height: 35px;
+            border-radius: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            line-height: 35px;
+        }
+
+        .disk1 {
+            width: 70px;
+            background-color: #e74c3c;
+        }
+
+        .disk2 {
+            width: 100px;
+            background-color: #3498db;
+        }
+
+        .disk3 {
+            width: 130px;
+            background-color: #2ecc71;
+        }
+
+        .disk4 {
+            width: 160px;
+            background-color: #f39c12;
+        }
+
+        .disk5 {
+            width: 190px;
+            background-color: #9b59b6;
+        }
+
+        .disk6 {
+            width: 220px;
+            background-color: #b65959;
+        }
+
+        .disk7 {
+            width: 250px;
+            background-color: #9cb463;
+        }
+
+        #message {
+            margin-top: 80px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #444;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Tower of Hanoi</h1>
+
+    <label>
+        Number of Disks:
+        <select id="diskCount">
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+        </select>
+    </label>
+
+    <br>
+
+    <button onclick="startGame()">Start Game</button>
+    <button onclick="resetGame()">Reset</button>
+
+    <div class="towers">
+
+        <div class="tower" id="A">
+            <h2>Source (A)</h2>
+        </div>
+
+        <div class="tower" id="B">
+            <h2>Auxiliary (B)</h2>
+        </div>
+
+        <div class="tower" id="C">
+            <h2>Destination (C)</h2>
+        </div>
+
+    </div>
+
+    <div id="message">
+        Select the number of disks and click Start Game.
+    </div>
+
+    <script>
+
+        let moves = [];
+        let moveIndex = 0;
+
+        // Start the game
+        function startGame() {
+
+            resetGame();
+
+            let n = Number(document.getElementById("diskCount").value);
+
+            createDisks(n);
+
+            // Generate Tower of Hanoi moves
+            moves = [];
+
+            towerOfHanoi(n, "A", "B", "C");
+
+            moveIndex = 0;
+
+            // Start animation
+            setTimeout(makeMove, 500);
+        }
+
+        // Tower of Hanoi recursive function
+        function towerOfHanoi(n, source, auxiliary, destination) {
+
+            // Base condition
+            if (n === 1) {
+
+                moves.push({
+                    disk: n,
+                    from: source,
+                    to: destination
+                });
+
+                return;
+            }
+
+            // Move n-1 disks from source to auxiliary
+            towerOfHanoi(n - 1, source, destination, auxiliary);
+
+            // Move largest disk from source to destination
+            moves.push({
+                disk: n,
+                from: source,
+                to: destination
+            });
+
+            // Move n-1 disks from auxiliary to destination
+            towerOfHanoi(n - 1, auxiliary, source, destination);
+        }
+
+        // Create disks on Source tower
+        function createDisks(n) {
+
+            let tower = document.getElementById("A");
+
+            for (let i = n; i >= 1; i--) {
+
+                let disk = document.createElement("div");
+
+                disk.className = "disk disk" + i;
+
+                disk.id = "disk" + i;
+
+                disk.innerText = i;
+
+                // Position disks from bottom to top
+                disk.style.bottom = ((n - i) * 35) + "px";
+
+                tower.appendChild(disk);
+            }
+        }
+
+        // Perform one move
+        function makeMove() {
+
+            if (moveIndex >= moves.length) {
+
+                document.getElementById("message").innerText =
+                    " All disks moved to Destination Successfully .";
+
+                return;
+            }
+
+            let move = moves[moveIndex];
+
+            let disk = document.getElementById("disk" + move.disk);
+
+            let destinationTower =
+                document.getElementById(move.to);
+
+            // Move disk to destination tower
+            destinationTower.appendChild(disk);
+
+            // Find disks currently on destination tower
+            let disks =
+                destinationTower.querySelectorAll(".disk");
+
+            // Position disk on top of other disks
+            disk.style.bottom =
+                ((disks.length - 1) * 35) + "px";
+
+            moveIndex++;
+
+            document.getElementById("message").innerText =
+                "Move disk " + move.disk +
+                " from " + move.from +
+                " → " + move.to;
+
+            // Wait before next move
+            setTimeout(makeMove, 1200);
+        }
+
+        // Reset the game
+        function resetGame() {
+
+            clearTowers();
+
+            moves = [];
+            moveIndex = 0;
+
+            document.getElementById("message").innerText =
+                "Select the number of disks and click Start Game.";
+        }
+
+        // Remove all disks
+        function clearTowers() {
+
+            let towers = document.querySelectorAll(".tower");
+
+            towers.forEach(function (tower) {
+
+                let disks =
+                    tower.querySelectorAll(".disk");
+
+                disks.forEach(function (disk) {
+                    disk.remove();
+                });
+
+            });
+        }
+
+    </script>
+
+</body>
+
+</html>
